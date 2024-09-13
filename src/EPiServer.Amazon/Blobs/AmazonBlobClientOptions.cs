@@ -17,5 +17,16 @@ namespace EPiServer.Amazon.Blobs
         /// Gets or sets what chunk size to request when downloading files.
         /// </summary>
         public int? DownloadChunkSize { get; set; }
+
+        // <summary>
+        // Gets or sets the ServiceURL.
+        // </summary)
+        public string ServiceURL { get; set; }
+
+        // <summary>
+        // Force use of PathStyle urls
+        // </summary>
+        public bool ForcePathStyle { get; set; }
+
     }
 }

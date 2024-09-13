@@ -85,6 +85,11 @@ namespace EPiServer.Amazon.Blobs
             {
                 throw new ArgumentException("The provided bucket name does not conform with AWS requirements. Bucket names must be at least 3 and no more than 63 characters long and only lower case characters, numbers and dashes (-) are allowed. In addition the name cannot begin or end with a dash.");
             }
+            // Endpoint and ServiceURL are mutually exclusive
+            if (!string.IsNullOrEmpty(_amazonBlobClientOptions.ServiceURL) && !string.IsNullOrEmpty(_amazonBlobClientOptions.Region))
+            {
+                throw new ArgumentException("ServiceURL and Region are mutually exclusive and should not be used together.");
+            }
 
             // RegionEndpoint
             RegionEndpoint CheckSystemName()
@@ -148,20 +153,25 @@ namespace EPiServer.Amazon.Blobs
         {
             // Use this construct to ensure we get the right defaults from the AWSClientFactory
             var region = !string.IsNullOrEmpty(_amazonBlobClientOptions.Region) ? RegionEndpoint.GetBySystemName(_amazonBlobClientOptions.Region) : default;
-            if (credentials == null && region == null)
-            {
-                return new AmazonS3Client();
+            var serviceurl = !string.IsNullOrEmpty(_amazonBlobClientOptions.ServiceURL) ? _amazonBlobClientOptions.ServiceURL : null;
+            var forcepathstyle = _amazonBlobClientOptions.ForcePathStyle;
+
+            var config = new AmazonS3Config();
+            if (region != null) {
+                config.RegionEndpoint = region;
             }
-            if (region == null)
-            {
-                return new AmazonS3Client(credentials);
+            if (serviceurl != null) {
+                config.ServiceURL = serviceurl;
+            }
+            if (forcepathstyle == true) {
+                config.ForcePathStyle = forcepathstyle;
             }
             if (credentials == null)
             {
-                return new AmazonS3Client(region);
+                return new AmazonS3Client(config);
             }
 
-            return new AmazonS3Client(credentials, region);
+            return new AmazonS3Client(credentials, config);
         }
 
         /// <summary>
